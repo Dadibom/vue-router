@@ -1897,9 +1897,11 @@ History.prototype.preload = function preload (location) {
   this.preloadConfirmedCallbacks = [];
   this.preloadedRoute = route;
   this.preloadConfirmed = false;
+  this.preloadError = null;
 
   this.confirmTransition(route, null, function (e) {
-    this$1.preloadedRoute = null;
+    this$1.preloadError = e;
+    this$1.preloadConfirmed = false;
     this$1.preloadConfirmedCallbacks = [];
   });
 };
@@ -1922,16 +1924,20 @@ History.prototype.transitionTo = function transitionTo (location, onComplete, on
   };
 
   if (this.preloadedRoute && this.preloadedRoute.fullPath === route.fullPath) {
-    route = this.preloadedRoute;
-    this.preloadConfirmed = true;
-    _onComplete();
-    this.router.app.$nextTick(function () {
-      this$1.preloadConfirmedCallbacks.forEach(function (cb) { cb(); });
-      this$1.preloadConfirmedCallbacks = [];
-    });
+    if (this.preloadError === null) {
+      route = this.preloadedRoute;
+      this.preloadConfirmed = true;
+      _onComplete();
+      this.router.app.$nextTick(function () {
+        this$1.preloadConfirmedCallbacks.forEach(function (cb) { cb(); });
+        this$1.preloadConfirmedCallbacks = [];
+      });
+    }
     this.preloadedRoute = null;
+    this.preloadError = null;
   } else {
     this.preloadedRoute = null;
+    this.preloadError = null;
 
     this.confirmTransition(route, _onComplete, function (err) {
       if (onAbort) {

@@ -26,6 +26,7 @@ export class History {
   preloadedRoute: ?Route;
   preloadConfirmedCallbacks: Array<Function>;
   preloadConfirmed: boolean;
+  preloadError: any;
 
   // implemented by sub-classes
   +go: (n: number) => void;
@@ -75,9 +76,11 @@ export class History {
     this.preloadConfirmedCallbacks = []
     this.preloadedRoute = route
     this.preloadConfirmed = false
+    this.preloadError = null
 
     this.confirmTransition(route, null, e => {
-      this.preloadedRoute = null
+      this.preloadError = e
+      this.preloadConfirmed = false
       this.preloadConfirmedCallbacks = []
     })
   }
@@ -98,16 +101,20 @@ export class History {
     }
 
     if (this.preloadedRoute && this.preloadedRoute.fullPath === route.fullPath) {
-      route = this.preloadedRoute
-      this.preloadConfirmed = true
-      _onComplete()
-      this.router.app.$nextTick(() => {
-        this.preloadConfirmedCallbacks.forEach(cb => { cb() })
-        this.preloadConfirmedCallbacks = []
-      })
+      if (this.preloadError === null) {
+        route = this.preloadedRoute
+        this.preloadConfirmed = true
+        _onComplete()
+        this.router.app.$nextTick(() => {
+          this.preloadConfirmedCallbacks.forEach(cb => { cb() })
+          this.preloadConfirmedCallbacks = []
+        })
+      }
       this.preloadedRoute = null
+      this.preloadError = null
     } else {
       this.preloadedRoute = null
+      this.preloadError = null
 
       this.confirmTransition(route, _onComplete, err => {
         if (onAbort) {
