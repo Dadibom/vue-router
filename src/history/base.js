@@ -76,7 +76,10 @@ export class History {
     this.preloadedRoute = route
     this.preloadConfirmed = false
 
-    this.confirmTransition(route)
+    this.confirmTransition(route, null, e => {
+      this.preloadedRoute = null
+      this.preloadConfirmedCallbacks = []
+    })
   }
 
   transitionTo (location: RawLocation, onComplete?: Function, onAbort?: Function) {

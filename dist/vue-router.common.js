@@ -1,6 +1,6 @@
 /**
   * vue-router v3.0.1
-  * (c) 2017 Evan You
+  * (c) 2018 Evan You
   * @license MIT
   */
 'use strict';
@@ -1890,6 +1890,8 @@ History.prototype.onError = function onError (errorCb) {
 };
 
 History.prototype.preload = function preload (location) {
+    var this$1 = this;
+
   var route = this.router.match(location, this.current);
   if (this.preloadedRoute && this.preloadedRoute.fullPath === route.fullPath) {
     return
@@ -1898,7 +1900,10 @@ History.prototype.preload = function preload (location) {
   this.preloadedRoute = route;
   this.preloadConfirmed = false;
 
-  this.confirmTransition(route);
+  this.confirmTransition(route, null, function (e) {
+    this$1.preloadedRoute = null;
+    this$1.preloadConfirmedCallbacks = [];
+  });
 };
 
 History.prototype.transitionTo = function transitionTo (location, onComplete, onAbort) {
